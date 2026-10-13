@@ -1,65 +1,82 @@
-Cyber Persistent Engagement Python Based Dictionary Scoring Algorithm
+# Cyber Persistent Engagement
 
-Included Programs
-FormulaScore: Takes a folder of templated workbooks and codes them according to the categories of deterrence, norms, and persistent engagement, returning a folder of coded workbooks. Supports excel formulas for calculation blocks, making it easier to edit. Libraries: openpyxl, pandas, os, shutil
+Python tools for dictionary-based coding of cybersecurity strategy documents that have already been converted into structured Excel workbooks.
 
-StrategyScore: Old iteration of words&phrases coder. It does the same thing as FormulaSupport, but without the excel formula support, giving raw numbers instead. It retains the order and format of the original templated workbook, as opposed to the color/code sorting of FormulaSupport. Libraries: openpyxl, os, shutil
+The scripts classify words and phrases into **deterrence**, **norms**, and **persistent engagement**, flag ambiguous matches, and aggregate scores for comparative research.
 
-MastersheetGenerator: Takes a folder of coded workbooks as an input and creates a master-workbook with all of the calculation block information. Libraries: openpyxl, os, xlwings
+## Research context
 
-Installation
-Please check the required libraries for the individual programs you want to use, and pip install them.
+This repository supports my cybersecurity-document research work at the University of Cincinnati. The broader work involves multilingual documents and cross-national comparison; these scripts cover workbook scoring and aggregation. Document extraction and translation are separate steps.
 
-Python
+Related research reference: [DOI: 10.7945/n1h7-wv34](https://doi.org/10.7945/n1h7-wv34).
 
-Python is required to run all programs. Check if python is already installed on your device by running 'py --version', 'python --version', or 'python3 --version' on your command line, depending on your device.
+## Programs
 
-If not installed, go to Python's website and follow the installation guide.
+| Script | Role | Dependencies |
+| --- | --- | --- |
+| [FormulaScore.py](FormulaScore.py) | Codes and sorts entries, adds highlights, and writes Excel formulas for scores. | openpyxl, pandas |
+| [StrategyScore.py](StrategyScore.py) | Earlier scoring implementation that preserves entry order and writes numeric scores. | openpyxl |
+| [MastersheetGenerator.py](MastersheetGenerator.py) | Reads coded workbooks through Excel and collects results in a master workbook. | openpyxl, xlwings, desktop Excel |
 
-On Windows:
+## Setup
 
-To use the program, go to the main repository page, click the 'code' dropdown, and download and extract the zip file.
-Move the python file to your desired main folder.
-Within the main folder, create an input folder to place formatted xlsx workbooks into.
-Within the main folder, create an output folder for the program to place coded xlsx workbooks.
-Move a formatted dictionary xlsx workbook into the main folder.
-Open the python file for editing (right click and select 'Edit in Notepad' or use an IDE of your choice) and change the variable names at the top of the program to correctly match your input folder, output folder, and dictionary workbook names.
-You are now ready to move workbooks into the input folder and run the program.
-Execution / Usage
-FormulaScore/StrategyScore:
+Use Python 3. For the master-workbook step, use a desktop environment with Excel available to xlwings.
 
-Double click the python file or select 'open with Python' to run the program.
+```bash
+git clone https://github.com/stevenrashid/Cyber-Peristent-Engagement.git
+cd Cyber-Peristent-Engagement
+python -m pip install openpyxl pandas xlwings
+```
 
-Each run of the program iterates through the input folder and generates a new sheet in the output folder for every file it finds there. Every coded file in the output folder will have the 'new_' starting file name to differentiate them from the original workbook. Be aware that when rerunning the program, the old files in the output folder MUST be deleted to prevent an error due to existing file names.
+The input workbooks and dictionary are **not included**. Supply compatible files before running the scripts.
 
-MastersheetGenerator:
+### Workbook format
 
-Double click the python file or select 'open with Python' to run the program.
+The scripts use the active worksheet and fixed cell positions:
 
-xlwings will open and close all of the excel workbooks included in the input directory to get the correct values from the formulas. The output mastersheet will be in the main directory and named 'Mastersheet.xlsx'
+| Section | Text | Frequency | Code | Comment | Total / relative scores |
+| --- | --- | --- | --- | --- | --- |
+| Phrases | A | B | C | D | G / H |
+| Words | J | K | L | M | P / Q |
+| Words and phrases | S | T | U | V | Y / Z |
 
-Features
+Data begins in row 2. Each text section must be contiguous because scanning stops at its first blank cell. Frequencies must be numeric.
 
+The dictionary's active worksheet stores deterrence terms in column A, norms in C, and persistent-engagement terms in E, starting at row 2. Dictionary terms are uppercased when read; prepare input text consistently because the matching functions compare it as stored.
 
-Coding column editing for each word
+## Run the workflow
 
-'0' means no match was found with any dictionary category, with no color highlight.
-'1' means a match was found with the "Deterrence" category, with a green cell highlight.
-'2' means a match was found with the "Norms" category, with a blue cell highlight
-'3' means a match was found with the "Persistent Engagement" category, with a purple cell highlight
-Comments column editing for each word
+1. Create `Templated/`, `Coded/`, and `Dictionaries/` in the repository root.
+2. Place formatted input workbooks in `Templated/` and the dictionary at `Dictionaries/Final_Dictionary.xlsx`, or edit the configuration variables at the top of `FormulaScore.py`.
+3. Run:
+   ```bash
+   python FormulaScore.py
+   ```
+4. Review the generated `new_*.xlsx` files in `Coded/`, including flagged matches.
+5. With Excel available, run:
+   ```bash
+   python MastersheetGenerator.py
+   ```
 
-An orange highlight and warning means the associated words CONTAIN a dictionary phrase or word, but it is not an exact match.
-A red highlight and warning means the associated words contain dictionary phrases or words from DIFFERENT categories. It will only provide the most recent coding in the coding column.
-Calculations for partial and relative totals
+The result is `Mastersheet.xlsx`, with `PHRASES`, `WORDS`, and `WORDS&PHRASES` sheets. Keep only intended `.xlsx` inputs in the coded folder. The master generator extracts country letters and year digits from filenames such as `new_Canada2020.xlsx`.
 
-Added to the corresponding tables on the excel workbooks. StrategyScore has Flat numbers only, with only complete totals sustaining excel formula format. FormulaScore allows for edits to the new workbook with excel formulae.
+Use `StrategyScore.py` as an alternative to `FormulaScore.py`, not as an additional scoring stage. Its default paths are `Input Folder`, `Output Folder`, and `Dictionary.xlsx`; configure them before execution.
 
-Comments column editing for each word
+## Codes and review flags
 
-- An orange highlight and warning means the associated words CONTAIN a dictionary phrase or word, but it is not an exact match.
-- A red highlight and warning means the associated words contain dictionary phrases or words from DIFFERENT categories. It will only provide the most recent coding in the coding column.
+| Code | Category | Highlight |
+| --- | --- | --- |
+| 0 | No dictionary match | None |
+| 1 | Deterrence | Green |
+| 2 | Norms | Blue |
+| 3 | Persistent engagement | Purple |
 
-Calculations for partial and relative totals
+Orange comments indicate partial matches; red comments indicate matches across categories. Conflicting matches require review because the coding cell retains the last assigned category.
 
-- Added to the corresponding tables on the excel workbooks. StrategyScore has Flat numbers only, with only complete totals sustaining excel formula format. FormulaScore allows for edits to the new workbook with excel formulae.
+## Operational notes
+
+- Use a fresh output directory or archive previous outputs before rerunning; existing `new_` files can cause move conflicts.
+- FormulaScore sorts entries by code, which changes their original order.
+- Formula-based scores require spreadsheet recalculation; openpyxl alone does not calculate them.
+- Empty or zero-frequency sections can produce division-by-zero results. Validate inputs and review workbook outputs.
+- Dictionary matching is a research coding aid and depends on the dictionary, formatting, and human review.
